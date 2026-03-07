@@ -1,0 +1,68 @@
+using System;
+using System.Threading.Tasks;
+using GtMotive.Estimate.Microservice.Api.Models.Requests;
+using MediatR;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace GtMotive.Estimate.Microservice.Api.Controllers
+{
+    /// <summary>
+    /// API controller for vehicle operations (create, list available).
+    /// </summary>
+    [ApiController]
+    [Route("api/[controller]")]
+    public sealed class VehiclesController : ControllerBase
+    {
+        private readonly IMediator _mediator;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VehiclesController"/> class.
+        /// </summary>
+        /// <param name="mediator">The MediatR mediator.</param>
+        public VehiclesController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+
+        /// <summary>
+        /// Creates a new vehicle in the fleet.
+        /// </summary>
+        /// <param name="request">The create vehicle request.</param>
+        /// <returns>201 Created with the vehicle data, or 400 if the vehicle is too old for the fleet.</returns>
+        [HttpPost]
+        [ProducesResponseType(typeof(Models.Responses.VehicleResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateVehicle([FromBody] CreateVehicleRequest request)
+        {
+            var result = await _mediator.Send(request).ConfigureAwait(false);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets a vehicle by identifier (for CreatedAtRoute link).
+        /// </summary>
+        /// <param name="id">The vehicle identifier.</param>
+        /// <returns>200 with vehicle or 404. Used by CreatedAtRoute; not implemented.</returns>
+        [HttpGet("{id}", Name = "GetVehicle")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult GetVehicle(Guid id)
+        {
+            return NotFound(new { vehicleId = id });
+        }
+
+        /// <summary>
+        /// Lists all vehicles available for rent.
+        /// </summary>
+        /// <returns>200 OK with the list of available vehicles.</returns>
+        [HttpGet("available")]
+        [ProducesResponseType(typeof(Models.Responses.ListAvailableVehiclesResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ListAvailable()
+        {
+            var request = new ListAvailableVehiclesRequest();
+            var result = await _mediator.Send(request).ConfigureAwait(false);
+            return result;
+        }
+    }
+}

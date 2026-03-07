@@ -9,20 +9,25 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
 {
     /// <summary>
     /// MongoDB implementation of <see cref="IRentalRepository"/>.
+    /// Uses <see cref="IMongoSessionAccessor"/> so that operations participate in the current request's transaction when one is started.
     /// </summary>
     public sealed class RentalRepository : IRentalRepository
     {
         private const string CollectionName = "rentals";
         private readonly IMongoCollection<RentalDocument> _collection;
+        private readonly IMongoSessionAccessor _sessionAccessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RentalRepository"/> class.
         /// </summary>
         /// <param name="mongoService">The MongoDB service.</param>
-        public RentalRepository(MongoService mongoService)
+        /// <param name="sessionAccessor">The session accessor for the current request (enables transactions).</param>
+        public RentalRepository(MongoService mongoService, IMongoSessionAccessor sessionAccessor)
         {
             ArgumentNullException.ThrowIfNull(mongoService);
+            ArgumentNullException.ThrowIfNull(sessionAccessor);
             _collection = mongoService.Database.GetCollection<RentalDocument>(CollectionName);
+            _sessionAccessor = sessionAccessor;
             EnsureIndexes();
         }
 
@@ -31,14 +36,14 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
         {
             ArgumentNullException.ThrowIfNull(rental);
             var doc = ToDocument(rental);
-            await _collection.InsertOneAsync(doc).ConfigureAwait(false);
+            await _collection.InsertOneAsync(_sessionAccessor.Session, doc).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task<Rental> GetById(Guid rentalId)
         {
             var doc = await _collection
-                .Find(x => x.Id == rentalId)
+                .Find(_sessionAccessor.Session, x => x.Id == rentalId)
                 .FirstOrDefaultAsync()
                 .ConfigureAwait(false);
             return doc == null ? null : ToEntity(doc);
@@ -48,7 +53,7 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
         public async Task<Rental> GetActiveByRenter(Guid renterId)
         {
             var doc = await _collection
-                .Find(x => x.RenterId == renterId && x.EndDate == null)
+                .Find(_sessionAccessor.Session, x => x.RenterId == renterId && x.EndDate == null)
                 .FirstOrDefaultAsync()
                 .ConfigureAwait(false);
             return doc == null ? null : ToEntity(doc);
@@ -60,6 +65,7 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
             ArgumentNullException.ThrowIfNull(rental);
             var doc = ToDocument(rental);
             await _collection.ReplaceOneAsync(
+                _sessionAccessor.Session,
                 x => x.Id == rental.Id,
                 doc).ConfigureAwait(false);
         }

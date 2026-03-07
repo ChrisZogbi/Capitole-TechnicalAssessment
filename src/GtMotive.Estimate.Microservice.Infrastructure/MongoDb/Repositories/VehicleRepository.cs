@@ -11,20 +11,25 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
 {
     /// <summary>
     /// MongoDB implementation of <see cref="IVehicleRepository"/>.
+    /// Uses <see cref="IMongoSessionAccessor"/> so that operations participate in the current request's transaction when one is started.
     /// </summary>
     public sealed class VehicleRepository : IVehicleRepository
     {
         private const string CollectionName = "vehicles";
         private readonly IMongoCollection<VehicleDocument> _collection;
+        private readonly IMongoSessionAccessor _sessionAccessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VehicleRepository"/> class.
         /// </summary>
         /// <param name="mongoService">The MongoDB service.</param>
-        public VehicleRepository(MongoService mongoService)
+        /// <param name="sessionAccessor">The session accessor for the current request (enables transactions).</param>
+        public VehicleRepository(MongoService mongoService, IMongoSessionAccessor sessionAccessor)
         {
             ArgumentNullException.ThrowIfNull(mongoService);
+            ArgumentNullException.ThrowIfNull(sessionAccessor);
             _collection = mongoService.Database.GetCollection<VehicleDocument>(CollectionName);
+            _sessionAccessor = sessionAccessor;
             EnsureIndexes();
         }
 
@@ -33,14 +38,14 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
         {
             ArgumentNullException.ThrowIfNull(vehicle);
             var doc = ToDocument(vehicle);
-            await _collection.InsertOneAsync(doc).ConfigureAwait(false);
+            await _collection.InsertOneAsync(_sessionAccessor.Session, doc).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task<Vehicle> GetById(Guid vehicleId)
         {
             var doc = await _collection
-                .Find(x => x.Id == vehicleId)
+                .Find(_sessionAccessor.Session, x => x.Id == vehicleId)
                 .FirstOrDefaultAsync()
                 .ConfigureAwait(false);
             return doc == null ? null : ToEntity(doc);
@@ -50,7 +55,7 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
         public async Task<IReadOnlyList<Vehicle>> GetAvailable()
         {
             var docs = await _collection
-                .Find(x => x.IsAvailable)
+                .Find(_sessionAccessor.Session, x => x.IsAvailable)
                 .ToListAsync()
                 .ConfigureAwait(false);
             var vehicles = docs.ConvertAll(ToEntity);
@@ -63,6 +68,7 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
             ArgumentNullException.ThrowIfNull(vehicle);
             var doc = ToDocument(vehicle);
             await _collection.ReplaceOneAsync(
+                _sessionAccessor.Session,
                 x => x.Id == vehicle.Id,
                 doc).ConfigureAwait(false);
         }

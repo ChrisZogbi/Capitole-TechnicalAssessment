@@ -7,13 +7,16 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.RentVehicle
 {
     /// <summary>
     /// Rents a vehicle to a renter. Enforces: vehicle must exist and be available; renter cannot have more than one active rental.
+    /// Uses <see cref="IUnitOfWork"/> so that Add(rental) and Update(vehicle) are committed atomically.
     /// </summary>
     public sealed class RentVehicleUseCase(
         IVehicleRepository vehicleRepository,
-        IRentalRepository rentalRepository) : IRentVehicleUseCase
+        IRentalRepository rentalRepository,
+        IUnitOfWork unitOfWork) : IRentVehicleUseCase
     {
         private readonly IVehicleRepository _vehicleRepository = vehicleRepository;
         private readonly IRentalRepository _rentalRepository = rentalRepository;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
         /// <inheritdoc/>
         public async Task<RentVehicleResult> Execute(RentVehicleInput input)
@@ -42,8 +45,10 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.RentVehicle
 
             vehicle.MarkAsRented();
 
+            await _unitOfWork.BeginTransactionAsync().ConfigureAwait(false);
             await _rentalRepository.Add(rental).ConfigureAwait(false);
             await _vehicleRepository.Update(vehicle).ConfigureAwait(false);
+            await _unitOfWork.Save().ConfigureAwait(false);
 
             var output = new RentVehicleOutput(rental.Id, rental.VehicleId, rental.RenterId, rental.StartDate);
             return RentVehicleResult.Success(output);

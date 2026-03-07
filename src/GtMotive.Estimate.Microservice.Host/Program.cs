@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
@@ -66,6 +66,7 @@ builder.Services.AddControllers(ApiConfiguration.ConfigureControllers)
     .WithApiControllers();
 
 builder.Services.AddBaseInfrastructure(builder.Environment.IsDevelopment());
+builder.Services.AddMongoRepositories();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {

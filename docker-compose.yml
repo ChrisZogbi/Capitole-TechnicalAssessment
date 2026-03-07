@@ -1,0 +1,41 @@
+# Ejecución local sin dependencias externas (solo Docker).
+# MongoDB se levanta como replica set de un nodo e se inicializa solo para que Rent/Return usen transacciones.
+# Uso: docker-compose up --build
+# Swagger: http://localhost:8080/swagger
+
+services:
+  mongo:
+    image: mongo:7
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+    healthcheck:
+      # Inicializa el replica set en el primer intento; en los siguientes solo comprueba estado.
+      # El host debe ser "mongo:27017" para que la API (otro contenedor) pueda usar el replica set.
+      test: ["CMD", "mongosh", "--port", "27017", "--quiet", "--eval", "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) }"]
+      interval: 5s
+      timeout: 30s
+      start_period: 10s
+      retries: 30
+
+  api:
+    build:
+      context: .
+      dockerfile: src/GtMotive.Estimate.Microservice.Host/Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      MongoDb__ConnectionString: "mongodb://mongo:27017"
+      MongoDb__MongoDbDatabaseName: "estimate-renting"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_URLS: "http://+:80"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  mongo_data:
+  mongo_config:

@@ -36,6 +36,21 @@
 - [Authentication](#authentication)
 - [Authorization](#authorization)
 
+## Running locally (no external dependencies)
+
+To run the microservice locally you only need **Docker** (and docker-compose). You do not need to install MongoDB or .NET on your machine.
+
+```bash
+docker-compose up --build
+```
+
+- **Swagger**: http://localhost:8080/swagger  
+- **MongoDB** runs as a single-node replica set and initializes automatically (required for Rent/Return transactions). No manual setup is required.
+
+Tests: `dotnet test` (from the repository root, with .NET SDK installed).
+
+---
+
 ## Introduction
 Sample implementation of the Clean Architecture Principles with .NET Core. Use cases as central organizing structure, decoupled from frameworks and technology details. Built with small components that are developed and tested in isolation.
 

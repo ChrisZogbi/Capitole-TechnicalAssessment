@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using GtMotive.Estimate.Microservice.Domain;
 using GtMotive.Estimate.Microservice.Domain.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -7,10 +7,13 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace GtMotive.Estimate.Microservice.Api.Filters
 {
+    /// <summary>Exception filter that maps domain and unhandled exceptions to appropriate HTTP responses.</summary>
+    /// <param name="appLogger">Logger for exception and domain messages.</param>
     public sealed class BusinessExceptionFilter(IAppLogger<BusinessExceptionFilter> appLogger) : IExceptionFilter
     {
         private readonly IAppLogger<BusinessExceptionFilter> _appLogger = appLogger;
 
+        /// <inheritdoc />
         public void OnException(ExceptionContext context)
         {
             ArgumentNullException.ThrowIfNull(context);

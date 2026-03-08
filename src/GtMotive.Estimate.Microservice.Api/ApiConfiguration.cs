@@ -13,9 +13,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GtMotive.Estimate.Microservice.Api
 {
+    /// <summary>API configuration and registration extensions.</summary>
     [ExcludeFromCodeCoverage]
     public static class ApiConfiguration
     {
+        /// <summary>Configures MVC options with API filters (e.g. business exception filter).</summary>
+        /// <param name="options">The MVC options to configure.</param>
         public static void ConfigureControllers(MvcOptions options)
         {
             ArgumentNullException.ThrowIfNull(options);
@@ -23,6 +26,9 @@ namespace GtMotive.Estimate.Microservice.Api
             options.Filters.Add<BusinessExceptionFilter>();
         }
 
+        /// <summary>Adds API controllers from this assembly and registers API dependencies.</summary>
+        /// <param name="builder">The MVC builder.</param>
+        /// <returns>The same builder for chaining.</returns>
         public static IMvcBuilder WithApiControllers(this IMvcBuilder builder)
         {
             ArgumentNullException.ThrowIfNull(builder);
@@ -34,6 +40,8 @@ namespace GtMotive.Estimate.Microservice.Api
             return builder;
         }
 
+        /// <summary>Registers API dependencies (authorization, MediatR, use cases, presenters).</summary>
+        /// <param name="services">The service collection.</param>
         public static void AddApiDependencies(this IServiceCollection services)
         {
             services.AddAuthorization(AuthorizationOptionsExtensions.Configure);

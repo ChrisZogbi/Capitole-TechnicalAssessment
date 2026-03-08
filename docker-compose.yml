@@ -13,9 +13,9 @@ services:
       - mongo_data:/data/db
       - mongo_config:/data/configdb
     healthcheck:
-      # Inicializa el replica set en el primer intento; en los siguientes solo comprueba estado.
+      # Inicializa el replica set en el primer intento; crea la DB estimate-renting para que aparezca en Compass.
       # El host debe ser "mongo:27017" para que la API (otro contenedor) pueda usar el replica set.
-      test: ["CMD", "mongosh", "--port", "27017", "--quiet", "--eval", "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) }"]
+      test: ["CMD", "mongosh", "--port", "27017", "--quiet", "--eval", "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) }; var d = db.getSiblingDB('estimate-renting'); if (d.getCollectionNames().length === 0) d.createCollection('_init');"]
       interval: 5s
       timeout: 30s
       start_period: 10s

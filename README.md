@@ -40,9 +40,34 @@
 
 To run the microservice locally you only need **Docker** (and docker-compose). You do not need to install MongoDB or .NET on your machine.
 
-```bash
-docker-compose up --build
-```
+### Step by step
+
+1. **Open a terminal** in the repository root (where `docker-compose.yml` and `src/` are).
+
+2. **Start the stack** (first time will build the API image and pull MongoDB; may take a few minutes):
+   ```bash
+   docker-compose up --build
+   ```
+
+3. **Wait until both services are up:**
+   - `mongo` will show as healthy once the replica set is initialized (healthcheck runs `rs.initiate`).
+   - `api` will start after MongoDB is healthy. Look for a line like *"Now listening on: http://[::]:80"* or *"Application started"*.
+
+4. **Open Swagger** in your browser:  
+   **http://localhost:8080/swagger**
+
+5. **Smoke test:**
+   - **GET** `/api/vehicles/available` → should return `200` and an array (empty at first).
+   - **POST** `/api/vehicles` with body e.g. `{ "manufacturingDate": "2024-01-15" }` → should return `201` and the created vehicle.
+   - **POST** `/api/rentals` with body e.g. `{ "vehicleId": "<id-from-above>", "renterId": "<any-guid>" }` → should return `200` and the rental.
+   - **POST** `/api/rentals/<rentalId>/return` → should return `200`.
+
+6. **Stop the stack** when done: press `Ctrl+C` in the terminal, then optionally:
+   ```bash
+   docker-compose down
+   ```
+
+**If pulling images fails** (e.g. `failed to copy` or `connectex` when pulling `mongo:7`): that is a network/connectivity issue (firewall, proxy, or registry timeout), not an application bug. Try: run again later; use another network (e.g. mobile hotspot); or configure Docker Desktop HTTPS proxy if you are behind a corporate proxy.
 
 - **Swagger**: http://localhost:8080/swagger  
 - **MongoDB** runs as a single-node replica set and initializes automatically (required for Rent/Return transactions). No manual setup is required.

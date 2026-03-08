@@ -1,0 +1,39 @@
+# Git and IDE
+.git
+.gitignore
+.vs
+.vscode
+.idea
+*.user
+*.suo
+
+# Build outputs (rebuilt inside container)
+**/bin
+**/obj
+**/out
+
+# Test projects (not needed for API image)
+test
+
+# Docker profile and Docker-related files (do not include in image context)
+**/Dockerfile*
+**/docker-compose*
+**/docker-compose.*
+**/.dockerignore
+**/*.dcproj
+
+# Docs and misc (optional; reduces context size)
+**/*.md
+!README.md
+docs
+.attachments
+
+# NuGet local cache (not needed)
+**/.nuget
+**/packages
+
+# OS and other
+**/Thumbs.db
+**/.DS_Store
+**/agent-transcripts
+**/terminals

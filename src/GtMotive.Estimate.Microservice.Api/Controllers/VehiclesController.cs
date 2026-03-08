@@ -40,16 +40,18 @@ namespace GtMotive.Estimate.Microservice.Api.Controllers
         }
 
         /// <summary>
-        /// Gets a vehicle by identifier (for CreatedAtRoute link).
+        /// Gets a vehicle by identifier.
         /// </summary>
         /// <param name="id">The vehicle identifier.</param>
-        /// <returns>200 with vehicle or 404. Used by CreatedAtRoute; not implemented.</returns>
+        /// <returns>200 with vehicle data, or 404 if not found.</returns>
         [HttpGet("{id}", Name = "GetVehicle")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Models.Responses.VehicleResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult GetVehicle(Guid id)
+        public async Task<IActionResult> GetVehicle(Guid id)
         {
-            return NotFound(new { vehicleId = id });
+            var request = new GetVehicleRequest { Id = id };
+            var result = await _mediator.Send(request).ConfigureAwait(false);
+            return result;
         }
 
         /// <summary>

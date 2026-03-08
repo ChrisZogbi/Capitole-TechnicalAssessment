@@ -11,8 +11,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GtMotive.Estimate.Microservice.Infrastructure
 {
+    /// <summary>Configuration extensions for base infrastructure (logging, telemetry).</summary>
     public static class InfrastructureConfiguration
     {
+        /// <summary>Adds base infrastructure (logging and telemetry) to the service collection.</summary>
+        /// <param name="services">The service collection.</param>
+        /// <param name="isDevelopment">When true, uses no-op telemetry; otherwise Application Insights.</param>
+        /// <returns>An infrastructure builder for further configuration.</returns>
         [ExcludeFromCodeCoverage]
         public static IInfrastructureBuilder AddBaseInfrastructure(
             this IServiceCollection services,

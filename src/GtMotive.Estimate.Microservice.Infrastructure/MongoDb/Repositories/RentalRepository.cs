@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Domain.Entities;
 using GtMotive.Estimate.Microservice.Domain.Interfaces;
@@ -69,6 +70,23 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
                 .FirstOrDefaultAsync()
                 .ConfigureAwait(false);
             return doc == null ? null : ToEntity(doc);
+        }
+
+        /// <inheritdoc/>
+        public async Task<IReadOnlyList<Rental>> GetRentals(bool? activeOnly)
+        {
+            var filter = activeOnly switch
+            {
+                true => Builders<RentalDocument>.Filter.Eq(x => x.EndDate, null),
+                false => Builders<RentalDocument>.Filter.Ne(x => x.EndDate, null),
+                _ => Builders<RentalDocument>.Filter.Empty,
+            };
+
+            var docs = await _collection
+                .Find(_sessionAccessor.Session, filter)
+                .ToListAsync()
+                .ConfigureAwait(false);
+            return docs.ConvertAll(ToEntity);
         }
 
         /// <inheritdoc/>

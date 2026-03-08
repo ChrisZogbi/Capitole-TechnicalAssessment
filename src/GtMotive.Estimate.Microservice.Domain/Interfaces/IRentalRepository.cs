@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Domain.Entities;
 
@@ -17,5 +18,12 @@ namespace GtMotive.Estimate.Microservice.Domain.Interfaces
         /// <param name="renterId">The renter identifier.</param>
         /// <returns>The active rental if the renter has one; otherwise null.</returns>
         Task<Rental> GetActiveByRenter(Guid renterId);
+
+        /// <summary>
+        /// Gets rentals optionally filtered by active state.
+        /// </summary>
+        /// <param name="activeOnly">True = only active (EndDate == null), false = only returned (EndDate != null), null = all.</param>
+        /// <returns>The list of rentals matching the filter.</returns>
+        Task<IReadOnlyList<Rental>> GetRentals(bool? activeOnly);
     }
 }

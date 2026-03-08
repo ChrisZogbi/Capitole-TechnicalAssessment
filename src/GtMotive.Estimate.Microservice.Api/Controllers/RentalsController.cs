@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Api.Models.Requests;
 using GtMotive.Estimate.Microservice.Api.Models.Responses;
@@ -20,6 +20,20 @@ namespace GtMotive.Estimate.Microservice.Api.Controllers
     public sealed class RentalsController(IMediator mediator) : ControllerBase
     {
         private readonly IMediator _mediator = mediator;
+
+        /// <summary>
+        /// Lists rentals with optional filter by active state.
+        /// </summary>
+        /// <param name="activeOnly">Optional: true = only active rentals, false = only returned, omit = all.</param>
+        /// <returns>200 OK with the list of rentals in envelope format.</returns>
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ListRentalsResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> List([FromQuery] bool? activeOnly)
+        {
+            var request = new ListRentalsRequest { ActiveOnly = activeOnly };
+            var result = await _mediator.Send(request).ConfigureAwait(false);
+            return result;
+        }
 
         /// <summary>
         /// Rents a vehicle for a renter.

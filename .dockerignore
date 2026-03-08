@@ -7,6 +7,9 @@
 *.user
 *.suo
 
+# SDK version: do not copy so container uses image's SDK (e.g. 9.0.100)
+global.json
+
 # Build outputs (rebuilt inside container)
 **/bin
 **/obj

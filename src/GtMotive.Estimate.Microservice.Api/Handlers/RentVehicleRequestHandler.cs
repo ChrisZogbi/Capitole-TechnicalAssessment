@@ -45,7 +45,10 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
             return result.ErrorCode switch
             {
                 UseCaseErrorCode.NotFound => new NotFoundObjectResult(ApiResponseBuilder.FromError(code, message)),
+                UseCaseErrorCode.VehicleNotFound => new NotFoundObjectResult(ApiResponseBuilder.FromError(code, message)),
+                UseCaseErrorCode.RentalNotFound => new NotFoundObjectResult(ApiResponseBuilder.FromError(code, message)),
                 UseCaseErrorCode.VehicleNotAvailable or UseCaseErrorCode.RenterAlreadyHasActiveRental => new ConflictObjectResult(ApiResponseBuilder.FromError(code, message)),
+                UseCaseErrorCode.VehicleTooOldForFleet => new BadRequestObjectResult(ApiResponseBuilder.FromError(code, message)),
                 _ => new BadRequestObjectResult(ApiResponseBuilder.FromError(code, message)),
             };
         }

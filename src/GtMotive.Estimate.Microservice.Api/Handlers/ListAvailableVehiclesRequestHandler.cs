@@ -36,7 +36,7 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
                 .Select(v => new VehicleResponse(v.Id, v.ManufacturingDate, v.IsAvailable))
                 .ToList();
             var response = new ListAvailableVehiclesResponse(vehicles);
-            return new OkObjectResult(response);
+            return new OkObjectResult(ApiResponseBuilder.Success(response));
         }
     }
 }

@@ -36,10 +36,10 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
             {
                 var output = result.Output;
                 var response = new ReturnVehicleResponse(output.RentalId, output.VehicleId, output.EndDate);
-                return new OkObjectResult(response);
+                return new OkObjectResult(ApiResponseBuilder.Success(response));
             }
 
-            return new NotFoundObjectResult(new { message = result.ErrorMessage });
+            return new NotFoundObjectResult(ApiResponseBuilder.FromError("RentalNotFound", result.ErrorMessage ?? "The rental was not found or has already been returned."));
         }
     }
 }

@@ -36,14 +36,16 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
             {
                 var output = result.Output;
                 var response = new RentVehicleResponse(output.RentalId, output.VehicleId, output.RenterId, output.StartDate);
-                return new OkObjectResult(response);
+                return new OkObjectResult(ApiResponseBuilder.Success(response));
             }
 
+            var code = result.ErrorCode ?? "Error";
+            var message = result.ErrorMessage ?? "An error occurred.";
             return result.ErrorCode switch
             {
-                "NotFound" => new NotFoundObjectResult(new { message = result.ErrorMessage }),
-                "VehicleNotAvailable" or "RenterAlreadyHasActiveRental" => new ConflictObjectResult(new { message = result.ErrorMessage }),
-                _ => new BadRequestObjectResult(new { message = result.ErrorMessage }),
+                "NotFound" => new NotFoundObjectResult(ApiResponseBuilder.FromError(code, message)),
+                "VehicleNotAvailable" or "RenterAlreadyHasActiveRental" => new ConflictObjectResult(ApiResponseBuilder.FromError(code, message)),
+                _ => new BadRequestObjectResult(ApiResponseBuilder.FromError(code, message)),
             };
         }
     }

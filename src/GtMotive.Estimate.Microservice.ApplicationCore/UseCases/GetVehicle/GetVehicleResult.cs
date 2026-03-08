@@ -20,6 +20,8 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.GetVehicle
         /// <summary>
         /// Creates a success result with the vehicle data.
         /// </summary>
+        /// <param name="vehicle">The vehicle summary when found.</param>
+        /// <returns>A result indicating the vehicle was found with the given data.</returns>
         public static GetVehicleResult Success(VehicleSummary vehicle) => new()
         {
             Found = true,
@@ -29,6 +31,7 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.GetVehicle
         /// <summary>
         /// Creates a not-found result.
         /// </summary>
+        /// <returns>A result indicating the vehicle was not found.</returns>
         public static GetVehicleResult NotFound() => new()
         {
             Found = false,

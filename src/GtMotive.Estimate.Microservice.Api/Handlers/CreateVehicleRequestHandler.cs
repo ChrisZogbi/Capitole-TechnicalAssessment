@@ -39,10 +39,10 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
                 return new CreatedAtRouteResult(
                     "GetVehicle",
                     new { id = output.VehicleId },
-                    response);
+                    ApiResponseBuilder.Success(response));
             }
 
-            return new BadRequestObjectResult(new { message = result.ErrorMessage });
+            return new BadRequestObjectResult(ApiResponseBuilder.FromError("VehicleTooOldForFleet", result.ErrorMessage ?? "The fleet cannot contain vehicles with a manufacturing date older than 5 years."));
         }
     }
 }

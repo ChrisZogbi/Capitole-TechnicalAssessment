@@ -32,6 +32,9 @@ services:
       MongoDb__MongoDbDatabaseName: "estimate-renting"
       ASPNETCORE_ENVIRONMENT: "Development"
       ASPNETCORE_URLS: "http://+:80"
+      # Alinear con URLS para evitar warning "Overriding HTTP_PORTS '8080'" (Docker inyecta 8080 por el port mapping)
+      HTTP_PORTS: "80"
+      HTTPS_PORTS: ""
     depends_on:
       mongo:
         condition: service_healthy

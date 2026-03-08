@@ -1,9 +1,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using GtMotive.Estimate.Microservice.Api.Authorization;
 using GtMotive.Estimate.Microservice.Api.DependencyInjection;
 using GtMotive.Estimate.Microservice.Api.Filters;
+using GtMotive.Estimate.Microservice.Api.Models.Responses;
 using GtMotive.Estimate.Microservice.ApplicationCore;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +19,28 @@ namespace GtMotive.Estimate.Microservice.Api
     [ExcludeFromCodeCoverage]
     public static class ApiConfiguration
     {
+        /// <summary>Configures API behavior (e.g. validation errors return envelope).</summary>
+        /// <param name="options">The API behavior options.</param>
+        public static void ConfigureApiBehavior(ApiBehaviorOptions options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                var message = string.Join(
+                    "; ",
+                    context.ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage));
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    message = "One or more validation errors occurred.";
+                }
+
+                return new BadRequestObjectResult(ApiResponseBuilder.FromError("ValidationError", message));
+            };
+        }
+
         /// <summary>Configures MVC options with API filters (e.g. business exception filter).</summary>
         /// <param name="options">The MVC options to configure.</param>
         public static void ConfigureControllers(MvcOptions options)

@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.GetVehicle
 {
     /// <summary>

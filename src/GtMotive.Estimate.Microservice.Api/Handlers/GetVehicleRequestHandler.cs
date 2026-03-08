@@ -33,14 +33,14 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
             var result = await _useCase.Execute(input).ConfigureAwait(false);
             if (!result.Found)
             {
-                return new NotFoundObjectResult(new { vehicleId = request.Id });
+                return new NotFoundObjectResult(ApiResponseBuilder.FromError("VehicleNotFound", "The vehicle was not found."));
             }
 
             var response = new VehicleResponse(
                 result.Vehicle.Id,
                 result.Vehicle.ManufacturingDate,
                 result.Vehicle.IsAvailable);
-            return new OkObjectResult(response);
+            return new OkObjectResult(ApiResponseBuilder.Success(response));
         }
     }
 }

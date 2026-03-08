@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Api.Models.Requests;
+using GtMotive.Estimate.Microservice.Api.Models.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,9 +32,9 @@ namespace GtMotive.Estimate.Microservice.Api.Controllers
         /// <param name="request">The rent vehicle request (vehicleId, renterId).</param>
         /// <returns>200 OK with rental data, 404 if vehicle not found, 409 if vehicle not available or renter already has a rental.</returns>
         [HttpPost]
-        [ProducesResponseType(typeof(Models.Responses.RentVehicleResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ApiResponse<RentVehicleResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
         public async Task<IActionResult> Rent([FromBody] RentVehicleRequest request)
         {
             var result = await _mediator.Send(request).ConfigureAwait(false);
@@ -46,8 +47,8 @@ namespace GtMotive.Estimate.Microservice.Api.Controllers
         /// <param name="id">The rental identifier.</param>
         /// <returns>200 OK with return data, or 404 if rental not found or already returned.</returns>
         [HttpPost("{id}/return")]
-        [ProducesResponseType(typeof(Models.Responses.ReturnVehicleResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<ReturnVehicleResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Return(Guid id)
         {
             var request = new ReturnVehicleRequest { RentalId = id };

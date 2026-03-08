@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using GtMotive.Estimate.Microservice.Domain.Exceptions;
 
 namespace GtMotive.Estimate.Microservice.Domain.ValueObjects
@@ -10,7 +10,6 @@ namespace GtMotive.Estimate.Microservice.Domain.ValueObjects
     public readonly struct ManufacturingDate
     {
         private const int MaximumAgeInYears = 5;
-        private readonly DateTime _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ManufacturingDate"/> struct.
@@ -32,15 +31,15 @@ namespace GtMotive.Estimate.Microservice.Domain.ValueObjects
                     $"The fleet cannot contain vehicles with a manufacturing date older than {MaximumAgeInYears} years.");
             }
 
-            _value = dateOnly;
+            Value = dateOnly;
         }
 
         /// <summary>
         /// Gets the date value.
         /// </summary>
-        public DateTime Value => _value;
+        public DateTime Value { get; }
 
         /// <inheritdoc/>
-        public override string ToString() => _value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        public override string ToString() => Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
     }
 }

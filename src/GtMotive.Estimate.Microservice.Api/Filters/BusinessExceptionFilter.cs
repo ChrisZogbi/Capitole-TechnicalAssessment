@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using GtMotive.Estimate.Microservice.Api.Models.Responses;
 using GtMotive.Estimate.Microservice.Domain.Exceptions;
 using GtMotive.Estimate.Microservice.Domain.Interfaces;
@@ -21,7 +21,7 @@ namespace GtMotive.Estimate.Microservice.Api.Filters
             _appLogger.LogError(context.Exception, "Exception captured in BusinessExceptionFilter.");
             var message = context.Exception.Message;
 
-            if (context.Exception is GtMotive.Estimate.Microservice.Domain.DomainException domainEx)
+            if (context.Exception is Domain.DomainException domainEx)
             {
                 var code = domainEx switch
                 {

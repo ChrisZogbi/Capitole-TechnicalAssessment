@@ -1,10 +1,10 @@
-namespace GtMotive.Estimate.Microservice.Domain.Exceptions
+﻿namespace GtMotive.Estimate.Microservice.Domain.Exceptions
 {
     /// <summary>
     /// Exception thrown when a vehicle's manufacturing date is older than 5 years.
     /// The fleet cannot contain vehicles with a manufacturing date superior to 5 years (in age).
     /// </summary>
-    public sealed class VehicleTooOldForFleetException : GtMotive.Estimate.Microservice.Domain.DomainException
+    public sealed class VehicleTooOldForFleetException : DomainException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="VehicleTooOldForFleetException"/> class.

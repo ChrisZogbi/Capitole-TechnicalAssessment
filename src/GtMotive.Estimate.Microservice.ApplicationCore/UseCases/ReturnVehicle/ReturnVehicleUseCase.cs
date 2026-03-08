@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Domain.Interfaces;
 
@@ -30,18 +30,18 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.ReturnVehicle
             var rental = await _rentalRepository.GetById(input.RentalId).ConfigureAwait(false);
             if (rental == null)
             {
-                return UseCaseResultBuilder.Failure<ReturnVehicleOutput>("NotFound", "The rental was not found.");
+                return UseCaseResultBuilder.Failure<ReturnVehicleOutput>(UseCaseErrorCode.RentalNotFound, "The rental was not found.");
             }
 
             if (!rental.IsActive)
             {
-                return UseCaseResultBuilder.Failure<ReturnVehicleOutput>("NotFound", "The rental has already been returned.");
+                return UseCaseResultBuilder.Failure<ReturnVehicleOutput>(UseCaseErrorCode.RentalNotFound, "The rental has already been returned.");
             }
 
             var vehicle = await _vehicleRepository.GetById(rental.VehicleId).ConfigureAwait(false);
             if (vehicle == null)
             {
-                return UseCaseResultBuilder.Failure<ReturnVehicleOutput>("NotFound", "The vehicle was not found.");
+                return UseCaseResultBuilder.Failure<ReturnVehicleOutput>(UseCaseErrorCode.VehicleNotFound, "The vehicle was not found.");
             }
 
             var endDate = DateTime.UtcNow;

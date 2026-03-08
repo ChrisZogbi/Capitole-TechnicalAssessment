@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases
 {
@@ -13,7 +13,7 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases
     /// <param name="data">The payload on success; null on failure.</param>
     /// <param name="errorCode">Error code on failure; null on success.</param>
     /// <param name="errorMessage">Error message on failure; null on success.</param>
-    public sealed class UseCaseResult<T>(bool isSuccess, T? data, string? errorCode, string? errorMessage)
+    public sealed class UseCaseResult<T>(bool isSuccess, T? data, UseCaseErrorCode? errorCode, string? errorMessage)
     {
         /// <summary>
         /// Gets a value indicating whether the operation succeeded.
@@ -28,7 +28,7 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases
         /// <summary>
         /// Gets the error code on failure; null when <see cref="IsSuccess"/> is true.
         /// </summary>
-        public string? ErrorCode { get; } = errorCode;
+        public UseCaseErrorCode? ErrorCode { get; } = errorCode;
 
         /// <summary>
         /// Gets the error message on failure; null when <see cref="IsSuccess"/> is true.

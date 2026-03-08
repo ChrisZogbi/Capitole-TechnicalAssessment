@@ -1,4 +1,4 @@
-﻿namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases
+namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases
 {
     /// <summary>
     /// Factory for <see cref="UseCaseResult{T}"/> to avoid static members on generic types (CA1000).
@@ -21,7 +21,7 @@
         /// <param name="errorCode">The error code.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns>A failure result.</returns>
-        public static UseCaseResult<T> Failure<T>(string errorCode, string errorMessage) =>
+        public static UseCaseResult<T> Failure<T>(UseCaseErrorCode errorCode, string errorMessage) =>
             new(false, default, errorCode, errorMessage);
     }
 }

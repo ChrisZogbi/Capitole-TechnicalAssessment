@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.ApplicationCore.UseCases.ListAvailableVehicles;
 using GtMotive.Estimate.Microservice.Domain.Interfaces;
@@ -19,7 +19,7 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.GetVehicle
             var vehicle = await _vehicleRepository.GetById(input.VehicleId).ConfigureAwait(false);
             if (vehicle == null)
             {
-                return UseCaseResultBuilder.Failure<VehicleSummary>("VehicleNotFound", "The vehicle was not found.");
+                return UseCaseResultBuilder.Failure<VehicleSummary>(UseCaseErrorCode.VehicleNotFound, "The vehicle was not found.");
             }
 
             var summary = new VehicleSummary(

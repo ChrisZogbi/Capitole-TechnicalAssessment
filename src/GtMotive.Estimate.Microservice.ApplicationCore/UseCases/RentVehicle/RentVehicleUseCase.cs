@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Domain.Entities;
 using GtMotive.Estimate.Microservice.Domain.Interfaces;
@@ -25,18 +25,18 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.RentVehicle
             var vehicle = await _vehicleRepository.GetById(input.VehicleId).ConfigureAwait(false);
             if (vehicle == null)
             {
-                return UseCaseResultBuilder.Failure<RentVehicleOutput>("NotFound", "The vehicle was not found.");
+                return UseCaseResultBuilder.Failure<RentVehicleOutput>(UseCaseErrorCode.NotFound, "The vehicle was not found.");
             }
 
             if (!vehicle.IsAvailable)
             {
-                return UseCaseResultBuilder.Failure<RentVehicleOutput>("VehicleNotAvailable", "The vehicle is not available for rent.");
+                return UseCaseResultBuilder.Failure<RentVehicleOutput>(UseCaseErrorCode.VehicleNotAvailable, "The vehicle is not available for rent.");
             }
 
             var activeRental = await _rentalRepository.GetActiveByRenter(input.RenterId).ConfigureAwait(false);
             if (activeRental != null)
             {
-                return UseCaseResultBuilder.Failure<RentVehicleOutput>("RenterAlreadyHasActiveRental", "The renter already has an active rental. Only one vehicle per renter at a time.");
+                return UseCaseResultBuilder.Failure<RentVehicleOutput>(UseCaseErrorCode.RenterAlreadyHasActiveRental, "The renter already has an active rental. Only one vehicle per renter at a time.");
             }
 
             var rentalId = Guid.NewGuid();

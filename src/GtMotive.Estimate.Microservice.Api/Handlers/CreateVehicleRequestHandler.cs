@@ -37,7 +37,7 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
                     ApiResponseBuilder.Success(response));
             }
 
-            return new BadRequestObjectResult(ApiResponseBuilder.FromError(result.ErrorCode ?? "VehicleTooOldForFleet", result.ErrorMessage ?? "The fleet cannot contain vehicles with a manufacturing date older than 5 years."));
+            return new BadRequestObjectResult(ApiResponseBuilder.FromError(result.ErrorCode?.ToString() ?? "VehicleTooOldForFleet", result.ErrorMessage ?? "The fleet cannot contain vehicles with a manufacturing date older than 5 years."));
         }
     }
 }

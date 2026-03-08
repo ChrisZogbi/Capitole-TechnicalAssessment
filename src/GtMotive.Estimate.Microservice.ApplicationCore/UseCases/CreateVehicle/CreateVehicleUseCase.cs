@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Domain.Entities;
 using GtMotive.Estimate.Microservice.Domain.Exceptions;
@@ -38,7 +38,7 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.CreateVehicle
             }
             catch (VehicleTooOldForFleetException ex)
             {
-                return UseCaseResultBuilder.Failure<CreateVehicleOutput>("VehicleTooOldForFleet", ex.Message);
+                return UseCaseResultBuilder.Failure<CreateVehicleOutput>(UseCaseErrorCode.VehicleTooOldForFleet, ex.Message);
             }
         }
     }

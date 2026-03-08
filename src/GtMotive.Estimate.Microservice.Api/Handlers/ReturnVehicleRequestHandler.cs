@@ -39,7 +39,7 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
                 return new OkObjectResult(ApiResponseBuilder.Success(response));
             }
 
-            return new NotFoundObjectResult(ApiResponseBuilder.FromError(result.ErrorCode ?? "RentalNotFound", result.ErrorMessage ?? "The rental was not found or has already been returned."));
+            return new NotFoundObjectResult(ApiResponseBuilder.FromError(result.ErrorCode?.ToString() ?? "RentalNotFound", result.ErrorMessage ?? "The rental was not found or has already been returned."));
         }
     }
 }

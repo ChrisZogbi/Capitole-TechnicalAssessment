@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Api.Models.Requests;
 using GtMotive.Estimate.Microservice.Api.Models.Responses;
+using GtMotive.Estimate.Microservice.ApplicationCore.UseCases;
 using GtMotive.Estimate.Microservice.ApplicationCore.UseCases.RentVehicle;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -39,12 +40,12 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
                 return new OkObjectResult(ApiResponseBuilder.Success(response));
             }
 
-            var code = result.ErrorCode ?? "Error";
+            var code = result.ErrorCode?.ToString() ?? "Error";
             var message = result.ErrorMessage ?? "An error occurred.";
             return result.ErrorCode switch
             {
-                "NotFound" => new NotFoundObjectResult(ApiResponseBuilder.FromError(code, message)),
-                "VehicleNotAvailable" or "RenterAlreadyHasActiveRental" => new ConflictObjectResult(ApiResponseBuilder.FromError(code, message)),
+                UseCaseErrorCode.NotFound => new NotFoundObjectResult(ApiResponseBuilder.FromError(code, message)),
+                UseCaseErrorCode.VehicleNotAvailable or UseCaseErrorCode.RenterAlreadyHasActiveRental => new ConflictObjectResult(ApiResponseBuilder.FromError(code, message)),
                 _ => new BadRequestObjectResult(ApiResponseBuilder.FromError(code, message)),
             };
         }

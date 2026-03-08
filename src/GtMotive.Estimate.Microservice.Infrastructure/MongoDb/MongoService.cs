@@ -1,5 +1,6 @@
 using System;
 using GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Settings;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
@@ -15,7 +16,8 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb
         /// Initializes a new instance of the <see cref="MongoService"/> class.
         /// </summary>
         /// <param name="options">MongoDB settings (connection string and database name), via IOptionsMonitor so configuration can be reloaded.</param>
-        public MongoService(IOptionsMonitor<MongoDbSettings> options)
+        /// <param name="logger">The logger (logs Debug on database resolution).</param>
+        public MongoService(IOptionsMonitor<MongoDbSettings> options, ILogger<MongoService> logger)
         {
             ArgumentNullException.ThrowIfNull(options);
             var settings = options.CurrentValue;
@@ -26,6 +28,8 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb
             Database = string.IsNullOrWhiteSpace(dbName)
                 ? throw new InvalidOperationException("MongoDbDatabaseName must be configured.")
                 : MongoClient.GetDatabase(dbName);
+
+            logger.LogDebug("MongoDB database resolved: {DatabaseName}", dbName);
         }
 
         /// <summary>

@@ -23,7 +23,8 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore.RentVehicle
             var vehicleRepo = new Mock<IVehicleRepository>();
             var rentalRepo = new Mock<IRentalRepository>();
             var unitOfWork = new Mock<IUnitOfWork>();
-            var sut = new RentVehicleUseCase(vehicleRepo.Object, rentalRepo.Object, unitOfWork.Object);
+            var appLogger = new Mock<IAppLogger<RentVehicleUseCase>>();
+            var sut = new RentVehicleUseCase(vehicleRepo.Object, rentalRepo.Object, unitOfWork.Object, appLogger.Object);
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Execute(null!));
 
@@ -40,7 +41,8 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore.RentVehicle
             vehicleRepo.Setup(r => r.GetById(vehicleId)).ReturnsAsync((Vehicle?)null);
             var rentalRepo = new Mock<IRentalRepository>();
             var unitOfWork = new Mock<IUnitOfWork>();
-            var sut = new RentVehicleUseCase(vehicleRepo.Object, rentalRepo.Object, unitOfWork.Object);
+            var appLogger = new Mock<IAppLogger<RentVehicleUseCase>>();
+            var sut = new RentVehicleUseCase(vehicleRepo.Object, rentalRepo.Object, unitOfWork.Object, appLogger.Object);
             var input = new RentVehicleInput(vehicleId, renterId);
 
             var result = await sut.Execute(input);
@@ -66,7 +68,8 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore.RentVehicle
             var rentalRepo = new Mock<IRentalRepository>();
             rentalRepo.Setup(r => r.GetActiveByRenter(renterId)).ReturnsAsync((Rental?)null);
             var unitOfWork = new Mock<IUnitOfWork>();
-            var sut = new RentVehicleUseCase(vehicleRepo.Object, rentalRepo.Object, unitOfWork.Object);
+            var appLogger = new Mock<IAppLogger<RentVehicleUseCase>>();
+            var sut = new RentVehicleUseCase(vehicleRepo.Object, rentalRepo.Object, unitOfWork.Object, appLogger.Object);
             var input = new RentVehicleInput(vehicleId, renterId);
 
             var result = await sut.Execute(input);
@@ -91,7 +94,8 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore.RentVehicle
             var rentalRepo = new Mock<IRentalRepository>();
             rentalRepo.Setup(r => r.GetActiveByRenter(renterId)).ReturnsAsync(existingRental);
             var unitOfWork = new Mock<IUnitOfWork>();
-            var sut = new RentVehicleUseCase(vehicleRepo.Object, rentalRepo.Object, unitOfWork.Object);
+            var appLogger = new Mock<IAppLogger<RentVehicleUseCase>>();
+            var sut = new RentVehicleUseCase(vehicleRepo.Object, rentalRepo.Object, unitOfWork.Object, appLogger.Object);
             var input = new RentVehicleInput(vehicleId, renterId);
 
             var result = await sut.Execute(input);
@@ -110,6 +114,7 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore.RentVehicle
             [Frozen] Mock<IVehicleRepository> vehicleRepo,
             [Frozen] Mock<IRentalRepository> rentalRepo,
             [Frozen] Mock<IUnitOfWork> unitOfWork,
+            [Frozen] Mock<IAppLogger<RentVehicleUseCase>> appLogger,
             RentVehicleUseCase sut)
         {
             var vehicleId = Guid.NewGuid();
@@ -131,6 +136,7 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore.RentVehicle
             vehicleRepo.Verify(r => r.Update(It.Is<Vehicle>(v => v.Id == vehicleId && !v.IsAvailable)), Times.Once);
             unitOfWork.Verify(u => u.BeginTransactionAsync(It.IsAny<System.Threading.CancellationToken>()), Times.Once);
             unitOfWork.Verify(u => u.Save(), Times.Once);
+            appLogger.Verify(l => l.LogInformation(It.IsAny<string>(), It.IsAny<object[]>()), Times.AtLeastOnce);
         }
 
         private static Vehicle CreateAvailableVehicle(Guid? id = null)

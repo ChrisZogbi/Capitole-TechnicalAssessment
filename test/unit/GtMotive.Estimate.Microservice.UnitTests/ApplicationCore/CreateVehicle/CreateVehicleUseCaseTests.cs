@@ -16,7 +16,8 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore.CreateVehicle
         public async Task ExecuteWhenInputIsNullThrowsArgumentNullException()
         {
             var vehicleRepository = new Mock<IVehicleRepository>();
-            var sut = new CreateVehicleUseCase(vehicleRepository.Object);
+            var appLogger = new Mock<IAppLogger<CreateVehicleUseCase>>();
+            var sut = new CreateVehicleUseCase(vehicleRepository.Object, appLogger.Object);
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Execute(null!));
 
@@ -27,6 +28,7 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore.CreateVehicle
         [AutoMoqData]
         public async Task ExecuteWhenManufacturingDateIsValidAddsVehicleAndReturnsSuccess(
             [Frozen] Mock<IVehicleRepository> vehicleRepository,
+            [Frozen] Mock<IAppLogger<CreateVehicleUseCase>> appLogger,
             CreateVehicleUseCase sut)
         {
             var validDate = DateTime.UtcNow.AddYears(-2).Date;
@@ -43,13 +45,15 @@ namespace GtMotive.Estimate.Microservice.UnitTests.ApplicationCore.CreateVehicle
                 r => r.Add(It.Is<Domain.Entities.Vehicle>(v =>
                     v.ManufacturingDate.Value == validDate && v.IsAvailable)),
                 Times.Once);
+            appLogger.Verify(l => l.LogInformation(It.IsAny<string>(), It.IsAny<object[]>()), Times.AtLeastOnce);
         }
 
         [Fact]
         public async Task ExecuteWhenManufacturingDateIsTooOldReturnsFailureWithVehicleTooOldForFleet()
         {
             var vehicleRepository = new Mock<IVehicleRepository>();
-            var sut = new CreateVehicleUseCase(vehicleRepository.Object);
+            var appLogger = new Mock<IAppLogger<CreateVehicleUseCase>>();
+            var sut = new CreateVehicleUseCase(vehicleRepository.Object, appLogger.Object);
             var tooOldDate = DateTime.UtcNow.AddYears(-6).Date;
             var input = new CreateVehicleInput(tooOldDate);
 

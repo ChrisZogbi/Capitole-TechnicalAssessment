@@ -14,33 +14,40 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.ReturnVehicle
     /// <param name="vehicleRepository">The vehicle repository.</param>
     /// <param name="rentalRepository">The rental repository.</param>
     /// <param name="unitOfWork">The unit of work for transactional commit.</param>
+    /// <param name="appLogger">The application logger.</param>
     public sealed class ReturnVehicleUseCase(
         IVehicleRepository vehicleRepository,
         IRentalRepository rentalRepository,
-        IUnitOfWork unitOfWork) : IReturnVehicleUseCase
+        IUnitOfWork unitOfWork,
+        IAppLogger<ReturnVehicleUseCase> appLogger) : IReturnVehicleUseCase
     {
         private readonly IVehicleRepository _vehicleRepository = vehicleRepository;
         private readonly IRentalRepository _rentalRepository = rentalRepository;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IAppLogger<ReturnVehicleUseCase> _appLogger = appLogger;
 
         /// <inheritdoc/>
         public async Task<UseCaseResult<ReturnVehicleOutput>> Execute(ReturnVehicleInput input)
         {
             ArgumentNullException.ThrowIfNull(input);
+            _appLogger.LogInformation("ReturnVehicle: starting. RentalId {RentalId}", input.RentalId);
             var rental = await _rentalRepository.GetById(input.RentalId).ConfigureAwait(false);
             if (rental == null)
             {
+                _appLogger.LogWarning("ReturnVehicle: rental not found. RentalId {RentalId}", input.RentalId);
                 return UseCaseResultBuilder.Failure<ReturnVehicleOutput>(UseCaseErrorCode.RentalNotFound, "The rental was not found.");
             }
 
             if (!rental.IsActive)
             {
+                _appLogger.LogWarning("ReturnVehicle: rental already returned. RentalId {RentalId}", input.RentalId);
                 return UseCaseResultBuilder.Failure<ReturnVehicleOutput>(UseCaseErrorCode.RentalNotFound, "The rental has already been returned.");
             }
 
             var vehicle = await _vehicleRepository.GetById(rental.VehicleId).ConfigureAwait(false);
             if (vehicle == null)
             {
+                _appLogger.LogWarning("ReturnVehicle: vehicle not found for rental. VehicleId {VehicleId}", rental.VehicleId);
                 return UseCaseResultBuilder.Failure<ReturnVehicleOutput>(UseCaseErrorCode.VehicleNotFound, "The vehicle was not found.");
             }
 
@@ -53,6 +60,7 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.ReturnVehicle
             await _vehicleRepository.Update(vehicle).ConfigureAwait(false);
             await _unitOfWork.Save().ConfigureAwait(false);
 
+            _appLogger.LogInformation("ReturnVehicle: completed. RentalId {RentalId}, VehicleId {VehicleId}", rental.Id, rental.VehicleId);
             var output = new ReturnVehicleOutput(rental.Id, rental.VehicleId, endDate);
             return UseCaseResultBuilder.Success(output);
         }

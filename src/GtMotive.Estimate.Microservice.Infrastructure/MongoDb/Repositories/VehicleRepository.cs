@@ -18,18 +18,22 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
         private const string CollectionName = "vehicles";
         private readonly IMongoCollection<VehicleDocument> _collection;
         private readonly IMongoSessionAccessor _sessionAccessor;
+        private readonly IAppLogger<VehicleRepository> _appLogger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VehicleRepository"/> class.
         /// </summary>
         /// <param name="mongoService">The MongoDB service.</param>
         /// <param name="sessionAccessor">The session accessor for the current request (enables transactions).</param>
-        public VehicleRepository(MongoService mongoService, IMongoSessionAccessor sessionAccessor)
+        /// <param name="appLogger">The application logger.</param>
+        public VehicleRepository(MongoService mongoService, IMongoSessionAccessor sessionAccessor, IAppLogger<VehicleRepository> appLogger)
         {
             ArgumentNullException.ThrowIfNull(mongoService);
             ArgumentNullException.ThrowIfNull(sessionAccessor);
+            ArgumentNullException.ThrowIfNull(appLogger);
             _collection = mongoService.Database.GetCollection<VehicleDocument>(CollectionName);
             _sessionAccessor = sessionAccessor;
+            _appLogger = appLogger;
             EnsureIndexes();
         }
 
@@ -37,8 +41,16 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
         public async Task Add(Vehicle vehicle)
         {
             ArgumentNullException.ThrowIfNull(vehicle);
-            var doc = ToDocument(vehicle);
-            await _collection.InsertOneAsync(_sessionAccessor.Session, doc).ConfigureAwait(false);
+            try
+            {
+                var doc = ToDocument(vehicle);
+                await _collection.InsertOneAsync(_sessionAccessor.Session, doc).ConfigureAwait(false);
+            }
+            catch (MongoException ex)
+            {
+                _appLogger.LogError(ex, "VehicleRepository.Add failed. VehicleId {VehicleId}", vehicle.Id);
+                throw;
+            }
         }
 
         /// <inheritdoc/>
@@ -66,11 +78,19 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
         public async Task Update(Vehicle vehicle)
         {
             ArgumentNullException.ThrowIfNull(vehicle);
-            var doc = ToDocument(vehicle);
-            await _collection.ReplaceOneAsync(
-                _sessionAccessor.Session,
-                x => x.Id == vehicle.Id,
-                doc).ConfigureAwait(false);
+            try
+            {
+                var doc = ToDocument(vehicle);
+                await _collection.ReplaceOneAsync(
+                    _sessionAccessor.Session,
+                    x => x.Id == vehicle.Id,
+                    doc).ConfigureAwait(false);
+            }
+            catch (MongoException ex)
+            {
+                _appLogger.LogError(ex, "VehicleRepository.Update failed. VehicleId {VehicleId}", vehicle.Id);
+                throw;
+            }
         }
 
         private static VehicleDocument ToDocument(Vehicle vehicle)

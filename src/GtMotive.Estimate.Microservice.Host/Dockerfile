@@ -19,11 +19,10 @@ COPY ["src/GtMotive.Estimate.Microservice.Host/GtMotive.Estimate.Microservice.Ho
 RUN dotnet restore "GtMotive.Estimate.Microservice.Host/GtMotive.Estimate.Microservice.Host.csproj" /p:NoWarn=NU1902
 COPY src .
 COPY . .
-# Run tests before building the runtime image; fail the build if any test fails
-# NoWarn: NU1902/NU1903 (package vuln), CS1591 (missing XML docs in test projects). %3B = semicolon.
+# Restore and build solution (tests are run in CI or locally; they need Docker/MongoDB not available during image build)
+# NoWarn: NU1902/NU1903 (package vuln), CS1591 (missing XML docs). %3B = semicolon.
 RUN dotnet restore "src/microservice.sln" /p:NoWarn=NU1902%3BNU1903 \
-    && dotnet build "src/microservice.sln" -c Release /p:NoWarn=NU1902%3BNU1903%3BCS1591 \
-    && dotnet test "src/microservice.sln" -c Release --no-build --verbosity normal
+    && dotnet build "src/microservice.sln" -c Release /p:NoWarn=NU1902%3BNU1903%3BCS1591
 
 WORKDIR "/src/GtMotive.Estimate.Microservice.Host"
 RUN dotnet build "GtMotive.Estimate.Microservice.Host.csproj" -c Release -o /app/build /p:NoWarn=NU1902

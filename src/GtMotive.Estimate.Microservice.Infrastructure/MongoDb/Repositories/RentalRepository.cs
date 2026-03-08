@@ -16,18 +16,22 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
         private const string CollectionName = "rentals";
         private readonly IMongoCollection<RentalDocument> _collection;
         private readonly IMongoSessionAccessor _sessionAccessor;
+        private readonly IAppLogger<RentalRepository> _appLogger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RentalRepository"/> class.
         /// </summary>
         /// <param name="mongoService">The MongoDB service.</param>
         /// <param name="sessionAccessor">The session accessor for the current request (enables transactions).</param>
-        public RentalRepository(MongoService mongoService, IMongoSessionAccessor sessionAccessor)
+        /// <param name="appLogger">The application logger.</param>
+        public RentalRepository(MongoService mongoService, IMongoSessionAccessor sessionAccessor, IAppLogger<RentalRepository> appLogger)
         {
             ArgumentNullException.ThrowIfNull(mongoService);
             ArgumentNullException.ThrowIfNull(sessionAccessor);
+            ArgumentNullException.ThrowIfNull(appLogger);
             _collection = mongoService.Database.GetCollection<RentalDocument>(CollectionName);
             _sessionAccessor = sessionAccessor;
+            _appLogger = appLogger;
             EnsureIndexes();
         }
 
@@ -35,8 +39,16 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
         public async Task Add(Rental rental)
         {
             ArgumentNullException.ThrowIfNull(rental);
-            var doc = ToDocument(rental);
-            await _collection.InsertOneAsync(_sessionAccessor.Session, doc).ConfigureAwait(false);
+            try
+            {
+                var doc = ToDocument(rental);
+                await _collection.InsertOneAsync(_sessionAccessor.Session, doc).ConfigureAwait(false);
+            }
+            catch (MongoException ex)
+            {
+                _appLogger.LogError(ex, "RentalRepository.Add failed. RentalId {RentalId}", rental.Id);
+                throw;
+            }
         }
 
         /// <inheritdoc/>
@@ -63,11 +75,19 @@ namespace GtMotive.Estimate.Microservice.Infrastructure.MongoDb.Repositories
         public async Task Update(Rental rental)
         {
             ArgumentNullException.ThrowIfNull(rental);
-            var doc = ToDocument(rental);
-            await _collection.ReplaceOneAsync(
-                _sessionAccessor.Session,
-                x => x.Id == rental.Id,
-                doc).ConfigureAwait(false);
+            try
+            {
+                var doc = ToDocument(rental);
+                await _collection.ReplaceOneAsync(
+                    _sessionAccessor.Session,
+                    x => x.Id == rental.Id,
+                    doc).ConfigureAwait(false);
+            }
+            catch (MongoException ex)
+            {
+                _appLogger.LogError(ex, "RentalRepository.Update failed. RentalId {RentalId}", rental.Id);
+                throw;
+            }
         }
 
         private static RentalDocument ToDocument(Rental rental)

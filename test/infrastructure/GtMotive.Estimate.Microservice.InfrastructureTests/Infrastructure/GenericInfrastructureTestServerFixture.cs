@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace GtMotive.Estimate.Microservice.InfrastructureTests.Infrastructure
 {
-    internal sealed class GenericInfrastructureTestServerFixture : IDisposable
+    public sealed class GenericInfrastructureTestServerFixture : IDisposable
     {
         public GenericInfrastructureTestServerFixture()
         {
@@ -16,7 +16,11 @@ namespace GtMotive.Estimate.Microservice.InfrastructureTests.Infrastructure
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseEnvironment("IntegrationTest")
                 .UseDefaultServiceProvider(options => { options.ValidateScopes = true; })
-                .ConfigureAppConfiguration((context, builder) => { builder.AddEnvironmentVariables(); })
+                .ConfigureAppConfiguration((context, builder) =>
+                {
+                    builder.AddJsonFile("appsettings.json", optional: true);
+                    builder.AddEnvironmentVariables();
+                })
                 .UseStartup<Startup>();
 
             Server = new TestServer(hostBuilder);

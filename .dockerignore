@@ -15,8 +15,8 @@ global.json
 **/obj
 **/out
 
-# Test projects (not needed for API image)
-test
+# Test projects are included so "dotnet test" can run during Docker build (see Dockerfile).
+# The runtime image (final stage) does not contain test code.
 
 # Docker profile and Docker-related files (do not include in image context)
 **/Dockerfile*

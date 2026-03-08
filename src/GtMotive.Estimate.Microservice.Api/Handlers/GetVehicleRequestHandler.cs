@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Api.Models.Requests;
@@ -12,18 +12,13 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
     /// <summary>
     /// MediatR handler for getting a vehicle by id.
     /// </summary>
-    public sealed class GetVehicleRequestHandler : IRequestHandler<GetVehicleRequest, IActionResult>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="GetVehicleRequestHandler"/> class.
+    /// </remarks>
+    /// <param name="useCase">The get vehicle use case.</param>
+    public sealed class GetVehicleRequestHandler(IGetVehicleUseCase useCase) : IRequestHandler<GetVehicleRequest, IActionResult>
     {
-        private readonly IGetVehicleUseCase _useCase;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GetVehicleRequestHandler"/> class.
-        /// </summary>
-        /// <param name="useCase">The get vehicle use case.</param>
-        public GetVehicleRequestHandler(IGetVehicleUseCase useCase)
-        {
-            _useCase = useCase;
-        }
+        private readonly IGetVehicleUseCase _useCase = useCase;
 
         /// <inheritdoc/>
         public async Task<IActionResult> Handle(GetVehicleRequest request, CancellationToken cancellationToken)

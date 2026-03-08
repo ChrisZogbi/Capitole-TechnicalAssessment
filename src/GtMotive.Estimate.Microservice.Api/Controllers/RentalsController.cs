@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Api.Models.Requests;
 using GtMotive.Estimate.Microservice.Api.Models.Responses;
@@ -11,20 +11,15 @@ namespace GtMotive.Estimate.Microservice.Api.Controllers
     /// <summary>
     /// API controller for rental operations (rent, return).
     /// </summary>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="RentalsController"/> class.
+    /// </remarks>
+    /// <param name="mediator">The MediatR mediator.</param>
     [ApiController]
     [Route("api/[controller]")]
-    public sealed class RentalsController : ControllerBase
+    public sealed class RentalsController(IMediator mediator) : ControllerBase
     {
-        private readonly IMediator _mediator;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RentalsController"/> class.
-        /// </summary>
-        /// <param name="mediator">The MediatR mediator.</param>
-        public RentalsController(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
+        private readonly IMediator _mediator = mediator;
 
         /// <summary>
         /// Rents a vehicle for a renter.

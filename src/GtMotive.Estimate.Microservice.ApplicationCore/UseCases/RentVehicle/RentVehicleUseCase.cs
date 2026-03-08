@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Domain.Entities;
 using GtMotive.Estimate.Microservice.Domain.Interfaces;
@@ -19,24 +19,24 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.RentVehicle
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
         /// <inheritdoc/>
-        public async Task<RentVehicleResult> Execute(RentVehicleInput input)
+        public async Task<UseCaseResult<RentVehicleOutput>> Execute(RentVehicleInput input)
         {
             ArgumentNullException.ThrowIfNull(input);
             var vehicle = await _vehicleRepository.GetById(input.VehicleId).ConfigureAwait(false);
             if (vehicle == null)
             {
-                return RentVehicleResult.Failure("NotFound", "The vehicle was not found.");
+                return UseCaseResultBuilder.Failure<RentVehicleOutput>("NotFound", "The vehicle was not found.");
             }
 
             if (!vehicle.IsAvailable)
             {
-                return RentVehicleResult.Failure("VehicleNotAvailable", "The vehicle is not available for rent.");
+                return UseCaseResultBuilder.Failure<RentVehicleOutput>("VehicleNotAvailable", "The vehicle is not available for rent.");
             }
 
             var activeRental = await _rentalRepository.GetActiveByRenter(input.RenterId).ConfigureAwait(false);
             if (activeRental != null)
             {
-                return RentVehicleResult.Failure("RenterAlreadyHasActiveRental", "The renter already has an active rental. Only one vehicle per renter at a time.");
+                return UseCaseResultBuilder.Failure<RentVehicleOutput>("RenterAlreadyHasActiveRental", "The renter already has an active rental. Only one vehicle per renter at a time.");
             }
 
             var rentalId = Guid.NewGuid();
@@ -51,7 +51,7 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.RentVehicle
             await _unitOfWork.Save().ConfigureAwait(false);
 
             var output = new RentVehicleOutput(rental.Id, rental.VehicleId, rental.RenterId, rental.StartDate);
-            return RentVehicleResult.Success(output);
+            return UseCaseResultBuilder.Success(output);
         }
     }
 }

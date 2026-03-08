@@ -32,9 +32,9 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
             var input = new RentVehicleInput(request.VehicleId, request.RenterId);
             var result = await _useCase.Execute(input).ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (result.IsSuccess && result.Data != null)
             {
-                var output = result.Output;
+                var output = result.Data;
                 var response = new RentVehicleResponse(output.RentalId, output.VehicleId, output.RenterId, output.StartDate);
                 return new OkObjectResult(ApiResponseBuilder.Success(response));
             }

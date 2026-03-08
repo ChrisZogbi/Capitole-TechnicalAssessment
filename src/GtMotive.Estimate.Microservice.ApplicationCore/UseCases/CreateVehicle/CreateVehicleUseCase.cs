@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Domain.Entities;
 using GtMotive.Estimate.Microservice.Domain.Exceptions;
@@ -19,7 +19,7 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.CreateVehicle
         private readonly IVehicleRepository _vehicleRepository = vehicleRepository;
 
         /// <inheritdoc/>
-        public async Task<CreateVehicleResult> Execute(CreateVehicleInput input)
+        public async Task<UseCaseResult<CreateVehicleOutput>> Execute(CreateVehicleInput input)
         {
             ArgumentNullException.ThrowIfNull(input);
             try
@@ -34,11 +34,11 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.CreateVehicle
                     vehicle.Id,
                     manufacturingDate.Value,
                     vehicle.IsAvailable);
-                return CreateVehicleResult.Success(output);
+                return UseCaseResultBuilder.Success(output);
             }
             catch (VehicleTooOldForFleetException ex)
             {
-                return CreateVehicleResult.Failure("VehicleTooOldForFleet", ex.Message);
+                return UseCaseResultBuilder.Failure<CreateVehicleOutput>("VehicleTooOldForFleet", ex.Message);
             }
         }
     }

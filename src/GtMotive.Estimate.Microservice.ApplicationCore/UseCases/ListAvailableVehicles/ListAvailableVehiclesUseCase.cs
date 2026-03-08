@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Domain.Interfaces;
 
@@ -16,14 +16,14 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.ListAvailableV
         private readonly IVehicleRepository _vehicleRepository = vehicleRepository;
 
         /// <inheritdoc/>
-        public async Task<ListAvailableVehiclesResult> Execute(ListAvailableVehiclesInput input)
+        public async Task<UseCaseResult<ListAvailableVehiclesOutput>> Execute(ListAvailableVehiclesInput input)
         {
             var vehicles = await _vehicleRepository.GetAvailable().ConfigureAwait(false);
             var summaries = vehicles
                 .Select(v => new VehicleSummary(v.Id, v.ManufacturingDate.Value, v.IsAvailable))
                 .ToList();
             var output = new ListAvailableVehiclesOutput(summaries);
-            return await Task.FromResult(new ListAvailableVehiclesResult(output)).ConfigureAwait(false);
+            return await Task.FromResult(UseCaseResultBuilder.Success(output)).ConfigureAwait(false);
         }
     }
 }

@@ -31,15 +31,16 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
             ArgumentNullException.ThrowIfNull(request);
             var input = new GetVehicleInput { VehicleId = request.Id };
             var result = await _useCase.Execute(input).ConfigureAwait(false);
-            if (!result.Found)
+            if (!result.IsSuccess || result.Data == null)
             {
-                return new NotFoundObjectResult(ApiResponseBuilder.FromError("VehicleNotFound", "The vehicle was not found."));
+                return new NotFoundObjectResult(ApiResponseBuilder.FromError(result.ErrorCode ?? "VehicleNotFound", result.ErrorMessage ?? "The vehicle was not found."));
             }
 
+            var vehicle = result.Data;
             var response = new VehicleResponse(
-                result.Vehicle.Id,
-                result.Vehicle.ManufacturingDate,
-                result.Vehicle.IsAvailable);
+                vehicle.Id,
+                vehicle.ManufacturingDate,
+                vehicle.IsAvailable);
             return new OkObjectResult(ApiResponseBuilder.Success(response));
         }
     }

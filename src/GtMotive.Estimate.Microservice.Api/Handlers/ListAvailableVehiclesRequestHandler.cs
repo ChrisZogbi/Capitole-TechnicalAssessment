@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,18 +13,13 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
     /// <summary>
     /// MediatR handler for listing available vehicles.
     /// </summary>
-    public sealed class ListAvailableVehiclesRequestHandler : IRequestHandler<ListAvailableVehiclesRequest, IActionResult>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="ListAvailableVehiclesRequestHandler"/> class.
+    /// </remarks>
+    /// <param name="useCase">The list available vehicles use case.</param>
+    public sealed class ListAvailableVehiclesRequestHandler(IListAvailableVehiclesUseCase useCase) : IRequestHandler<ListAvailableVehiclesRequest, IActionResult>
     {
-        private readonly IListAvailableVehiclesUseCase _useCase;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ListAvailableVehiclesRequestHandler"/> class.
-        /// </summary>
-        /// <param name="useCase">The list available vehicles use case.</param>
-        public ListAvailableVehiclesRequestHandler(IListAvailableVehiclesUseCase useCase)
-        {
-            _useCase = useCase;
-        }
+        private readonly IListAvailableVehiclesUseCase _useCase = useCase;
 
         /// <inheritdoc/>
         public async Task<IActionResult> Handle(ListAvailableVehiclesRequest request, CancellationToken cancellationToken)
@@ -32,7 +27,13 @@ namespace GtMotive.Estimate.Microservice.Api.Handlers
             ArgumentNullException.ThrowIfNull(request);
             var input = ListAvailableVehiclesInput.Default;
             var result = await _useCase.Execute(input).ConfigureAwait(false);
-            var vehicles = result.Output.Vehicles
+            var data = result.Data;
+            if (data == null)
+            {
+                return new OkObjectResult(ApiResponseBuilder.Success(new ListAvailableVehiclesResponse([])));
+            }
+
+            var vehicles = data.Vehicles
                 .Select(v => new VehicleResponse(v.Id, v.ManufacturingDate, v.IsAvailable))
                 .ToList();
             var response = new ListAvailableVehiclesResponse(vehicles);

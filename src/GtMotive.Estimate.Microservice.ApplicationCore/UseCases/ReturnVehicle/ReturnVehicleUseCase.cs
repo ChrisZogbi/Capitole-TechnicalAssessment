@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using GtMotive.Estimate.Microservice.Domain.Interfaces;
 
@@ -24,24 +24,24 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.ReturnVehicle
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
         /// <inheritdoc/>
-        public async Task<ReturnVehicleResult> Execute(ReturnVehicleInput input)
+        public async Task<UseCaseResult<ReturnVehicleOutput>> Execute(ReturnVehicleInput input)
         {
             ArgumentNullException.ThrowIfNull(input);
             var rental = await _rentalRepository.GetById(input.RentalId).ConfigureAwait(false);
             if (rental == null)
             {
-                return ReturnVehicleResult.Failure("NotFound", "The rental was not found.");
+                return UseCaseResultBuilder.Failure<ReturnVehicleOutput>("NotFound", "The rental was not found.");
             }
 
             if (!rental.IsActive)
             {
-                return ReturnVehicleResult.Failure("NotFound", "The rental has already been returned.");
+                return UseCaseResultBuilder.Failure<ReturnVehicleOutput>("NotFound", "The rental has already been returned.");
             }
 
             var vehicle = await _vehicleRepository.GetById(rental.VehicleId).ConfigureAwait(false);
             if (vehicle == null)
             {
-                return ReturnVehicleResult.Failure("NotFound", "The vehicle was not found.");
+                return UseCaseResultBuilder.Failure<ReturnVehicleOutput>("NotFound", "The vehicle was not found.");
             }
 
             var endDate = DateTime.UtcNow;
@@ -54,7 +54,7 @@ namespace GtMotive.Estimate.Microservice.ApplicationCore.UseCases.ReturnVehicle
             await _unitOfWork.Save().ConfigureAwait(false);
 
             var output = new ReturnVehicleOutput(rental.Id, rental.VehicleId, endDate);
-            return ReturnVehicleResult.Success(output);
+            return UseCaseResultBuilder.Success(output);
         }
     }
 }

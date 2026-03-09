@@ -74,5 +74,3 @@ En una integración real, bastaría con:
   - `POST /api/rentals` → alquila un vehículo disponible (200).
   - `POST /api/rentals/{id}/return` → devuelve el alquiler (200).
   - `GET /api/rentals?activeOnly=true|false` → lista rentals activos/devueltos aplicando correctamente el filtro.
-
-Para más detalle sobre los casos probados (incluyendo códigos de error y escenarios de conflicto) ver `docs/pruebas-api-endpoints.md`.

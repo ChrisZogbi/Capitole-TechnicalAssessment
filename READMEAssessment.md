@@ -1,76 +1,76 @@
 ## Capitole Technical Assessment – Renting Microservice
 
-Este documento resume **qué se ha implementado** sobre la plantilla original y **cómo se ha adaptado el tema de autenticación** para la prueba técnica.
+This document summarizes **what was implemented** on top of the original template and **how authentication was handled** for the assessment.
 
 ---
 
-## Alcance funcional implementado
+## Implemented scope
 
-- **Dominio de Renting**
-  - Entidades y reglas de negocio para **Vehicle** y **Rental** (incluyendo regla de “máximo 5 años de antigüedad” y “un alquiler activo por renter”).
-  - Puertos de dominio `IVehicleRepository` e `IRentalRepository` para acceso a datos.
+- **Renting domain**
+  - Entities and business rules for **Vehicle** and **Rental** (including “maximum 5 years old” for vehicles and “one active rental per renter”).
+  - Domain ports `IVehicleRepository` and `IRentalRepository` for data access.
 
-- **Casos de uso (ApplicationCore)**
+- **Use cases (ApplicationCore)**
   - `CreateVehicle`, `ListAvailableVehicles`, `RentVehicle`, `ReturnVehicle`.
-  - Nuevo caso de uso **`ListRentals`** con filtro opcional `activeOnly` (activos / devueltos / todos).
-  - Uso de `UseCaseResult<T>` + `UseCaseResultBuilder` para encapsular éxito/errores.
+  - New **`ListRentals`** use case with optional `activeOnly` filter (active / returned / all).
+  - Use of `UseCaseResult<T>` + `UseCaseResultBuilder` to encapsulate success / error.
 
-- **Infraestructura (MongoDB)**
-  - Repositorios MongoDB para vehículos y alquileres.
-  - Implementación de `GetRentals(bool? activeOnly)` filtrando por `EndDate` (null / no null / todos).
-  - Transacciones MongoDB (replica set de un nodo) para operaciones Rent/Return.
+- **Infrastructure (MongoDB)**
+  - MongoDB repositories for vehicles and rentals.
+  - Implementation of `GetRentals(bool? activeOnly)` filtering by `EndDate` (null / not null / all).
+  - MongoDB transactions (single‑node replica set) for Rent/Return operations.
 
-- **API REST**
-  - Endpoints principales:
+- **REST API**
+  - Main endpoints:
     - `POST /api/vehicles`
     - `GET /api/vehicles/{id}`
     - `GET /api/vehicles/available`
     - `POST /api/rentals`
     - `POST /api/rentals/{id}/return`
     - `GET /api/rentals` con `?activeOnly=true|false` (o sin parámetro).
-  - Todas las respuestas usan un **envelope homogéneo** `ApiResponse<T>` (`isSuccess`, `data`, `error`).
-  - Integración con **MediatR** (requests/handlers por endpoint).
+  - All responses use a **homogeneous envelope** `ApiResponse<T>` (`isSuccess`, `data`, `error`).
+  - Integration with **MediatR** (request/handler per endpoint).
 
-- **Ejecución local y pruebas manuales**
-  - `docker-compose.yml` levanta **MongoDB en replica set** + **API** sin dependencias externas.
-  - Documentado en `docs/pruebas-api-endpoints.md` un juego de pruebas manuales (happy paths y edge cases) ejecutadas contra la API real.
+- **Local run and manual testing**
+  - `docker-compose.yml` starts **MongoDB replica set** + **API** with no external dependencies.
+  - `docs/pruebas-api-endpoints.md` documents a manual test suite (happy paths and edge cases) executed against the running API.
 
-- **Pruebas automáticas**
-  - Tests unitarios en `test/unit` para los casos de uso (incluyendo `ListRentalsUseCaseTests`).  
-  - Tests funcionales / de infraestructura existentes de la plantilla siguen pasando.
-
----
-
-## Autenticación y autorización
-
-La plantilla original del microservicio está pensada para integrarse con **IdentityServer** (secciones de Authentication/Authorization, URL de IdentityServer, etc.).  
-Para esta prueba técnica en concreto se ha decidido **no activar esa integración** por dos motivos:
-
-- El **servidor de IdentityServer no está accesible** en el entorno de evaluación (no tengo credenciales ni endpoint operativo contra el que validar tokens).
-- Para que la API funcionara “tal cual se levanta con `docker compose`”, habría que tener también configurada en IdentityServer la **URL de Swagger / callback** correspondiente; sin acceso al servidor de identidad, no es posible asegurar esa configuración ni probarla end‑to‑end.
-
-Por ello:
-
-- La API de renting se ha dejado **100 % preparada para añadir autenticación** (controladores, capas de aplicación y dominio son compatibles con `[Authorize]`, políticas, JWT bearer, etc.).
-- Pero **no se ha activado auth en esta entrega**: todos los endpoints se exponen como **anónimos** para garantizar que el revisor puede levantar el stack local y probar la funcionalidad sin depender de un IdentityServer externo que no controla.
-
-En una integración real, bastaría con:
-
-- Configurar el esquema **JWT bearer** apuntando a la URL de IdentityServer proporcionada por el cliente.
-- Añadir `[Authorize]`/políticas en los controladores según los roles necesarios.
-- Alinear el `renterId` con el `sub` (u otro claim) del token emitido por IdentityServer, en lugar de recibirlo explícitamente en el body.
+- **Automated tests**
+  - Unit tests in `test/unit` for the use cases (including `ListRentalsUseCaseTests`).  
+  - Existing functional / infrastructure tests from the template still pass.
 
 ---
 
-## Cómo ejecutar y probar
+## Authentication and authorization
 
-- **Levantar entorno** (sin instalar .NET ni MongoDB en local):
+The original template is designed to integrate with **IdentityServer** (Authentication/Authorization sections, IdentityServer URL, etc.).  
+For this assessment I decided **not to enable that integration**, for two reasons:
+
+- The **IdentityServer instance is not accessible** in the evaluation environment (no credentials or live endpoint to validate tokens against).
+- To make sure the API “just works with `docker compose up`”, IdentityServer would also need to be configured with the correct **Swagger URL / callback**; without access to that server, I cannot guarantee or test that end‑to‑end.
+
+Because of that:
+
+- The renting API is left **100% ready for authentication to be added** (controllers, application layer and domain are compatible with `[Authorize]`, policies, JWT bearer, etc.).
+- But **auth is not enabled in this delivery**: all endpoints are **anonymous**, so the reviewer can run the stack locally and test the functionality without depending on an external IdentityServer they do not control.
+
+In a real integration it would be enough to:
+
+- Configure ASP.NET Core **JWT bearer authentication** pointing to the client’s IdentityServer URL.
+- Add `[Authorize]` and policies on controllers according to required roles.
+- Align `renterId` with the `sub` (or another claim) of the token issued by IdentityServer, instead of receiving it explicitly in the request body.
+
+---
+
+## How to run and smoke test
+
+- **Run locally** (no need to install .NET or MongoDB):
   - `docker compose up --build`
   - Swagger: `http://localhost:8080/swagger`
 
-- **Smoke test mínimo**
-  - `GET /api/vehicles/available` → `200 OK`, array (posiblemente vacío).
-  - `POST /api/vehicles` → crea vehículo (201) si la fecha es ≤ 5 años.
-  - `POST /api/rentals` → alquila un vehículo disponible (200).
-  - `POST /api/rentals/{id}/return` → devuelve el alquiler (200).
-  - `GET /api/rentals?activeOnly=true|false` → lista rentals activos/devueltos aplicando correctamente el filtro.
+- **Minimal smoke test**
+  - `GET /api/vehicles/available` → `200 OK`, array (possibly empty).
+  - `POST /api/vehicles` → creates a vehicle (`201 Created`) if manufacturing date is ≤ 5 years.
+  - `POST /api/rentals` → rents an available vehicle (`200 OK`).
+  - `POST /api/rentals/{id}/return` → returns the rental (`200 OK`).
+  - `GET /api/rentals?activeOnly=true|false` → lists active/returned rentals applying the filter correctly.

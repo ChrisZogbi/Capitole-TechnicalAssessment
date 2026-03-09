@@ -1,8 +1,3 @@
-# Ejecución local sin dependencias externas (solo Docker).
-# MongoDB se levanta como replica set de un nodo e se inicializa solo para que Rent/Return usen transacciones.
-# Uso: docker-compose up --build
-# Swagger: http://localhost:8080/swagger
-
 services:
   mongo:
     image: mongo:7
@@ -13,8 +8,8 @@ services:
       - mongo_data:/data/db
       - mongo_config:/data/configdb
     healthcheck:
-      # Inicializa el replica set en el primer intento; crea la DB estimate-renting para que aparezca en Compass.
-      # El host debe ser "mongo:27017" para que la API (otro contenedor) pueda usar el replica set.
+      # Initialize the replica set on first run; create the estimate-renting DB so it appears in MongoDB tools.
+      # Host must be "mongo:27017" so the API container can use the replica set.
       test: ["CMD", "mongosh", "--port", "27017", "--quiet", "--eval", "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) }; var d = db.getSiblingDB('estimate-renting'); if (d.getCollectionNames().length === 0) d.createCollection('_init');"]
       interval: 5s
       timeout: 30s
@@ -32,7 +27,7 @@ services:
       MongoDb__MongoDbDatabaseName: "estimate-renting"
       ASPNETCORE_ENVIRONMENT: "Development"
       ASPNETCORE_URLS: "http://+:80"
-      # Alinear con URLS para evitar warning "Overriding HTTP_PORTS '8080'" (Docker inyecta 8080 por el port mapping)
+      # Align with URLS to avoid the warning "Overriding HTTP_PORTS '8080'" (Docker injects 8080 via port mapping)
       HTTP_PORTS: "80"
       HTTPS_PORTS: ""
     depends_on:
